@@ -1,4 +1,7 @@
-export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Em produção (deploy multi-service do Vercel), frontend e backend ficam no
+// mesmo domínio — as chamadas usam caminho relativo (BASE_URL vazio). Em dev
+// local, o backend roda numa porta separada (localhost:8000).
+export const BASE_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "");
 const TOKEN_KEY = "nexileads_token";
 
 // foto_url pode ser um caminho local (upload direto no Faro, ex: "/uploads/x.jpg",
