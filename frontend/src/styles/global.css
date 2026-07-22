@@ -1,4 +1,4 @@
-/* Design Faro — adaptado do protótipo estático em /design/design-leads.html */
+/* Design NexiLeads — adaptado do protótipo estático em /design/design-leads.html */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -15,9 +15,9 @@ body {
 .login-screen:after { content: ''; position: absolute; bottom: -160px; left: -120px; width: 380px; height: 380px; background: #3b82f6; opacity: .06; border-radius: 50%; filter: blur(90px); }
 .login-card { position: relative; width: 100%; max-width: 380px; background: #1b1c22; border: 1px solid #30323b; border-radius: 16px; padding: 36px 32px 30px; }
 .login-brand { display: flex; align-items: center; margin-bottom: 26px; }
-.logo-mark { font-family: Montserrat, Arial, sans-serif; font-weight: 700; letter-spacing: .5px; color: #fff; }
-.logo-mark .logo-suffix { color: #81869e; font-weight: 600; font-size: .5em; letter-spacing: .05em; text-transform: uppercase; vertical-align: middle; margin-left: 4px; }
-.login-brand .logo-mark { font-size: 22px; }
+.logo-mark { display: inline-flex; align-items: center; gap: 8px; font-family: 'Segoe UI', -apple-system, system-ui, Arial, sans-serif; font-weight: 700; font-stretch: 85%; letter-spacing: .06em; text-transform: uppercase; color: #fff; }
+.logo-mark .logo-icon { width: 1.15em; height: 1.15em; flex-shrink: 0; }
+.login-brand .logo-mark { font-size: 20px; }
 .login-title { font-size: 19px; font-weight: 750; margin-bottom: 6px; }
 .login-sub { font-size: 12px; color: #81869e; margin-bottom: 26px; line-height: 1.5; }
 .field { margin-bottom: 16px; }
@@ -69,7 +69,7 @@ body {
 
 .avatar { width: 28px; height: 28px; border-radius: 50%; background: #24262e; border: 1px solid #30323b; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #cfd3da; overflow: hidden; flex-shrink: 0; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-.avatar-lg { width: 84px; height: 84px; font-size: 26px; }
+.avatar-lg { width: 132px; height: 132px; font-size: 40px; }
 
 header { background: #1b1c22; border: 1px solid #30323b; padding: 20px 24px; border-radius: 16px; margin-bottom: 18px; }
 h1 { font-size: 20px; font-weight: 750; letter-spacing: 0; }
@@ -191,11 +191,10 @@ tr:hover td { background: rgba(255, 255, 255, .025); }
   .userbox-desktop { display: none; }
   .userbox-mobile { display: flex; }
   .cards { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; }
-  .admin-senha-gerada { margin: 0 14px 14px; }
 }
 
 /* ---------- PERFIL ---------- */
-.perfil-body { display: grid; grid-template-columns: 160px 1fr; gap: 24px; padding: 20px; }
+.perfil-body { display: grid; grid-template-columns: 160px 1fr; align-items: center; gap: 24px; padding: 20px; }
 @media (max-width: 620px) { .perfil-body { grid-template-columns: 1fr; } }
 .perfil-foto-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .perfil-form { display: flex; flex-direction: column; gap: 14px; }
@@ -206,10 +205,6 @@ tr:hover td { background: rgba(255, 255, 255, .025); }
 .perfil-valor.muted { color: #81869e; }
 .perfil-acoes { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 
-/* ---------- ADMIN ---------- */
-.admin-link { cursor: pointer; font-size: 11px; border: 1px solid #30323b; border-radius: 6px; padding: 5px 9px; }
-.admin-link:hover { border-color: #09bc8a; color: #09bc8a; }
-.admin-form { padding: 20px; }
 .field-checkbox label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #fff; text-transform: none; cursor: pointer; }
 .field-checkbox input[type="checkbox"] {
   appearance: none;
@@ -232,11 +227,6 @@ tr:hover td { background: rgba(255, 255, 255, .025); }
   background-size: 9px 9px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolyline points='3.5 8.5 7 12 12.5 4' fill='none' stroke='%2303231b' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
-.badge-admin { display: inline-block; margin-left: 8px; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; background: rgba(9, 188, 138, .13); color: #09bc8a; border: 1px solid rgba(9, 188, 138, .3); }
-.admin-acoes { display: flex; gap: 6px; align-items: center; white-space: nowrap; }
-.admin-senha-gerada { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 20px 18px; padding: 12px 14px; background: rgba(9, 188, 138, .08); border: 1px solid rgba(9, 188, 138, .3); border-radius: 8px; font-size: 12px; color: #fff; }
-.admin-senha-gerada code { background: #14151a; border: 1px solid #30323b; border-radius: 6px; padding: 3px 8px; font-family: Consolas, monospace; color: #09bc8a; }
-
 .cnpj-busca-form { display: flex; gap: 8px; width: 100%; max-width: 420px; }
 .cnpj-busca-form input { flex: 1; padding: 10px 12px; background: #14151a; border: 1px solid #30323b; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
 .cnpj-busca-form input:focus { border-color: #09bc8a; }

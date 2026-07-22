@@ -1,6 +1,5 @@
-"""Limpa dados que só ficam ocupando espaço no banco com o tempo:
-tokens de redefinição de senha já usados ou expirados, e entradas do cache
-de CNPJ velhas demais pra ainda servir de cache de verdade.
+"""Limpa entradas do cache de CNPJ velhas demais pra ainda servir de cache
+de verdade.
 
 Não apaga nada que ainda esteja em uso — só o que já perdeu utilidade.
 
@@ -12,7 +11,7 @@ Windows, se quiser que isso aconteça sozinho.
 from datetime import datetime, timedelta, timezone
 
 from app.database import SessionLocal
-from app.models import CnpjConsulta, PasswordResetToken
+from app.models import CnpjConsulta
 
 # Além do prazo de 30 dias que já decide se o cache ainda "vale" pra evitar
 # bater na API de novo (ver CNPJ_CACHE_DIAS em routers/leads.py), entradas
@@ -25,15 +24,6 @@ def main():
     try:
         agora = datetime.now(timezone.utc)
 
-        tokens_removidos = (
-            db.query(PasswordResetToken)
-            .filter(
-                (PasswordResetToken.usado.is_(True))
-                | (PasswordResetToken.expira_em < agora)
-            )
-            .delete(synchronize_session=False)
-        )
-
         limite_cache = agora - timedelta(days=RETENCAO_CACHE_CNPJ_DIAS)
         cache_removido = (
             db.query(CnpjConsulta)
@@ -42,7 +32,6 @@ def main():
         )
 
         db.commit()
-        print(f"{tokens_removidos} token(s) de redefinição de senha removido(s)")
         print(f"{cache_removido} entrada(s) de cache de CNPJ removida(s) (mais de {RETENCAO_CACHE_CNPJ_DIAS} dias)")
     finally:
         db.close()

@@ -1,5 +1,4 @@
 from collections.abc import Generator
-from datetime import timezone
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -36,19 +35,4 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
 
-    emitido_em = payload.get("iat")
-    if user.senha_alterada_em and emitido_em is not None:
-        alterada_em_ts = user.senha_alterada_em.replace(tzinfo=timezone.utc).timestamp()
-        if emitido_em < alterada_em_ts:
-            raise credentials_exception
-
     return user
-
-
-def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso restrito a administradores",
-        )
-    return current_user

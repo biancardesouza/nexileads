@@ -4,14 +4,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class LoginRequest(BaseModel):
-    username: str
+    email: str
     password: str
-
-
-class RegistrarRequest(BaseModel):
-    username: str
-    password: str
-    nome: str
 
 
 class Token(BaseModel):
@@ -28,36 +22,6 @@ class UserOut(BaseModel):
     email: str | None = None
     telefone: str | None = None
     foto_url: str | None = None
-    is_admin: bool = False
-
-
-class PerfilUpdateRequest(BaseModel):
-    username: str
-    nome: str
-    email: str | None = None
-    telefone: str | None = None
-
-
-class PerfilUpdateResponse(UserOut):
-    access_token: str
-
-
-class ExcluirContaRequest(BaseModel):
-    password: str
-
-
-class AlterarSenhaRequest(BaseModel):
-    senha_atual: str
-    nova_senha: str
-
-
-class EsqueciSenhaRequest(BaseModel):
-    identificador: str
-
-
-class RedefinirSenhaRequest(BaseModel):
-    token: str
-    nova_senha: str
 
 
 class RegistroLigacaoCreate(BaseModel):
@@ -107,35 +71,3 @@ class NovoLeadOut(LeadBase):
 
 class OcultarLeadRequest(BaseModel):
     cnpj: str
-
-
-class AdminUserOut(BaseModel):
-    id: int
-    username: str
-    nome: str
-    email: str | None = None
-    telefone: str | None = None
-    is_admin: bool
-    total_leads: int
-
-
-class AdminCreateUserRequest(BaseModel):
-    username: str
-    nome: str
-    password: str
-    is_admin: bool = False
-
-
-class AdminResetSenhaResponse(BaseModel):
-    nova_senha: str
-
-
-class LogAuditoriaOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    admin_username: str
-    acao: str
-    alvo_username: str
-    detalhes: str | None = None
-    criado_em: datetime

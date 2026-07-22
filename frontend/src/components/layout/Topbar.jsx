@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { BASE_URL } from "../../api/client";
+import { fotoSrc } from "../../api/client";
 import HamburgerIcon from "../common/HamburgerIcon";
+import Logo from "../common/Logo";
 
 function initials(name) {
   return name
@@ -11,7 +12,7 @@ function initials(name) {
     .join("");
 }
 
-export default function Topbar({ perfil, onLogout, onAbrirPerfil, onAbrirAdmin }) {
+export default function Topbar({ perfil, onLogout, onAbrirPerfil }) {
   const [menuAberto, setMenuAberto] = useState(false);
   const menuRef = useRef(null);
 
@@ -33,21 +34,18 @@ export default function Topbar({ perfil, onLogout, onAbrirPerfil, onAbrirAdmin }
 
   const avatar = (
     <div className="avatar">
-      {perfil.foto_url ? <img src={`${BASE_URL}${perfil.foto_url}`} alt="" /> : initials(perfil.nome)}
+      {perfil.foto_url ? <img src={fotoSrc(perfil.foto_url)} alt="" /> : initials(perfil.nome)}
     </div>
   );
 
   return (
     <nav className="topbar">
       <div className="brand">
-        <div className="logo-mark">Faro<span className="logo-suffix">CRM</span></div>
+        <Logo />
       </div>
 
       {/* Telas maiores: tudo visível lado a lado */}
       <div className="userbox userbox-desktop">
-        {perfil.is_admin && (
-          <span className="admin-link" onClick={onAbrirAdmin}>Administração</span>
-        )}
         <button className="perfil-trigger" onClick={onAbrirPerfil} title="Ver perfil">
           {avatar}
           <span>{perfil.nome}</span>
@@ -69,9 +67,6 @@ export default function Topbar({ perfil, onLogout, onAbrirPerfil, onAbrirAdmin }
         {menuAberto && (
           <div className="menu-mobile">
             <button type="button" onClick={() => irPara(onAbrirPerfil)}>Ver perfil</button>
-            {perfil.is_admin && (
-              <button type="button" onClick={() => irPara(onAbrirAdmin)}>Administração</button>
-            )}
             <button type="button" className="sair" onClick={() => irPara(onLogout)}>Sair</button>
           </div>
         )}

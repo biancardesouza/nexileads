@@ -17,7 +17,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 backend/.env
-backend/uploads
 backend/*.db*
 backend/backups/
 

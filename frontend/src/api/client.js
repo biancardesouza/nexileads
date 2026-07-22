@@ -1,5 +1,14 @@
 export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const TOKEN_KEY = "faro_token";
+const TOKEN_KEY = "nexileads_token";
+
+// foto_url pode ser um caminho local (upload direto no Faro, ex: "/uploads/x.jpg",
+// precisa do BASE_URL na frente) ou uma URL já completa vinda do Bubble
+// (ex: "//cdn.bubble.io/...jpg" ou "https://..."), que não pode ser prefixada.
+export function fotoSrc(fotoUrl) {
+  if (!fotoUrl) return null;
+  if (/^(https?:)?\/\//.test(fotoUrl)) return fotoUrl;
+  return `${BASE_URL}${fotoUrl}`;
+}
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -48,52 +57,12 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
   return res.json();
 }
 
-async function requestMultipart(path, formData) {
-  const headers = {};
-  const token = getToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE_URL}${path}`, { method: "POST", headers, body: formData });
-
-  if (!res.ok) {
-    let detail = res.statusText;
-    try {
-      const data = await res.json();
-      detail = data.detail || detail;
-    } catch {
-      // resposta sem corpo JSON
-    }
-    throw new ApiError(detail, res.status);
-  }
-  return res.json();
-}
-
 export const api = {
-  login(username, password) {
-    return request("/auth/login", { method: "POST", body: { username, password }, auth: false });
+  login(email, password) {
+    return request("/auth/login", { method: "POST", body: { email, password }, auth: false });
   },
   getMe() {
     return request("/auth/me");
-  },
-  updatePerfil({ username, nome, email, telefone }) {
-    return request("/auth/me", { method: "PATCH", body: { username, nome, email, telefone } });
-  },
-  alterarSenha({ senha_atual, nova_senha }) {
-    return request("/auth/me/senha", { method: "PATCH", body: { senha_atual, nova_senha } });
-  },
-  esqueciSenha(identificador) {
-    return request("/auth/esqueci-senha", { method: "POST", body: { identificador }, auth: false });
-  },
-  redefinirSenha({ token, nova_senha }) {
-    return request("/auth/redefinir-senha", { method: "POST", body: { token, nova_senha }, auth: false });
-  },
-  uploadFoto(file) {
-    const formData = new FormData();
-    formData.append("foto", file);
-    return requestMultipart("/auth/me/foto", formData);
-  },
-  deleteAccount(password) {
-    return request("/auth/me", { method: "DELETE", body: { password } });
   },
   getLeads() {
     return request("/leads");
@@ -116,20 +85,5 @@ export const api = {
   },
   ocultarLead(cnpj) {
     return request("/leads/novos/ocultar", { method: "POST", body: { cnpj } });
-  },
-  listarUsuariosAdmin() {
-    return request("/admin/usuarios");
-  },
-  criarUsuarioAdmin(dados) {
-    return request("/admin/usuarios", { method: "POST", body: dados });
-  },
-  resetarSenhaAdmin(id) {
-    return request(`/admin/usuarios/${id}/resetar-senha`, { method: "POST" });
-  },
-  excluirUsuarioAdmin(id) {
-    return request(`/admin/usuarios/${id}`, { method: "DELETE" });
-  },
-  listarAuditoriaAdmin() {
-    return request("/admin/auditoria");
   },
 };
