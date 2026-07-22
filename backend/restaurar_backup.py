@@ -1,4 +1,4 @@
-"""Restaura o banco (faro.db) a partir de um backup criado pelo
+"""Restaura o banco (nexileads.db) a partir de um backup criado pelo
 backup_banco.py.
 
 IMPORTANTE: pare o backend antes de rodar isso, e reinicie depois — restaurar
@@ -19,12 +19,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "faro.db"
+DB_PATH = Path(__file__).parent / "nexileads.db"
 BACKUPS_DIR = Path(__file__).parent / "backups"
 
 
 def listar_backups():
-    backups = sorted(BACKUPS_DIR.glob("faro_*.db"), reverse=True)
+    backups = sorted(
+        [*BACKUPS_DIR.glob("nexileads_*.db"), *BACKUPS_DIR.glob("faro_*.db")],
+        reverse=True,
+    )
     if not backups:
         print(f"Nenhum backup encontrado em {BACKUPS_DIR}")
         return

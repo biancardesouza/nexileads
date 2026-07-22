@@ -3,7 +3,7 @@ Receita Federal (que tem dezenas de GB e exige um pipeline de ETL).
 
 Cada CNPJ é consultado sob demanda em uma API pública (BrasilAPI, com OpenCNPJ
 como alternativa caso a primeira falhe ou não responda), e o resultado é
-normalizado para o formato usado pelos leads do Faro. O router é quem
+normalizado para o formato usado pelos leads do NexiLeads. O router é quem
 decide se guarda o resultado em cache (ver `models.CnpjConsulta`).
 
 Referências:

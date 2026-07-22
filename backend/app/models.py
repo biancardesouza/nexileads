@@ -16,18 +16,17 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True, index=True)
     nome: Mapped[str]
+    # Autenticação é toda feita pelo Bubble (ver bubble_client.py); esse valor
+    # é um placeholder aleatório só pra satisfazer o NOT NULL da coluna
+    # existente — nunca é lido nem verificado.
     hashed_password: Mapped[str]
+    bubble_user_id: Mapped[str | None] = mapped_column(unique=True, index=True, default=None)
     email: Mapped[str | None] = mapped_column(default=None)
     telefone: Mapped[str | None] = mapped_column(default=None)
     foto_url: Mapped[str | None] = mapped_column(default=None)
-    is_admin: Mapped[bool] = mapped_column(default=False)
-    senha_alterada_em: Mapped[datetime | None] = mapped_column(default=None)
 
     leads: Mapped[list["Lead"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
     leads_ocultos: Mapped[list["LeadOculto"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
-    reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
 
 
 class Lead(Base):
@@ -99,35 +98,3 @@ class CnpjConsulta(Base):
     situacao_cadastral: Mapped[str] = mapped_column(default="")
     fonte: Mapped[str] = mapped_column(default="")
     consultado_em: Mapped[datetime] = mapped_column(default=_agora)
-
-
-class PasswordResetToken(Base):
-    __tablename__ = "password_reset_tokens"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    token: Mapped[str] = mapped_column(unique=True, index=True)
-    criado_em: Mapped[datetime] = mapped_column(default=_agora)
-    expira_em: Mapped[datetime]
-    usado: Mapped[bool] = mapped_column(default=False)
-
-    user: Mapped["User"] = relationship(back_populates="reset_tokens")
-
-
-class LogAuditoria(Base):
-    """Histórico de ações do admin sobre contas de usuário.
-
-    Guarda username em texto (não FK) de propósito — o registro precisa
-    sobreviver mesmo depois que a conta alvo (ou até o admin) for excluída,
-    senão o log perderia justamente as exclusões, que são a ação mais
-    importante de registrar.
-    """
-
-    __tablename__ = "logs_auditoria"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    admin_username: Mapped[str]
-    acao: Mapped[str]
-    alvo_username: Mapped[str]
-    detalhes: Mapped[str | None] = mapped_column(default=None)
-    criado_em: Mapped[datetime] = mapped_column(default=_agora)
