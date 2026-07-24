@@ -18,6 +18,8 @@ services:
         sync: false
       - key: BUBBLE_API_SECRET
         sync: false
+      - key: COOKIE_SECURE
+        value: "true"
 
   - type: web
     name: nexileads-frontend

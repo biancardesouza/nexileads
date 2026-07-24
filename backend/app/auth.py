@@ -1,8 +1,8 @@
 import os
 from datetime import datetime, timedelta, timezone
 
+import jwt
 from dotenv import load_dotenv
-from jose import JWTError, jwt
 
 load_dotenv()
 
@@ -13,6 +13,18 @@ if not SECRET_KEY:
     )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24h
+
+TOKEN_COOKIE_NAME = "nexileads_token"
+
+# Em produção (Render), frontend e backend ficam em domínios diferentes
+# (cross-site) e servem em HTTPS — o cookie precisa de Secure=True e
+# SameSite=None pra ser enviado nas chamadas da SPA pro backend (o navegador
+# recusa SameSite=None sem Secure). Em dev local os dois rodam em
+# http://localhost com portas diferentes, que o navegador trata como
+# "same-site" (mesmo host, sem HTTPS) — SameSite=Lax funciona e não exige
+# Secure, o que é necessário já que dev local normalmente não tem HTTPS.
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").strip().lower() == "true"
+COOKIE_SAMESITE = "none" if COOKIE_SECURE else "lax"
 
 
 def create_access_token(data: dict) -> str:
@@ -26,5 +38,5 @@ def create_access_token(data: dict) -> str:
 def decode_access_token(token: str) -> dict | None:
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
+    except jwt.PyJWTError:
         return None

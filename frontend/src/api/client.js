@@ -2,7 +2,6 @@
 // VITE_API_URL aponta pra URL do backend no Render. Em dev local, o backend
 // roda numa porta separada (localhost:8000).
 export const BASE_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "");
-const TOKEN_KEY = "nexileads_token";
 
 // foto_url pode ser um caminho local (upload direto no Faro, ex: "/uploads/x.jpg",
 // precisa do BASE_URL na frente) ou uma URL já completa vinda do Bubble
@@ -20,28 +19,15 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token) {
-  localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
-async function request(path, { method = "GET", body, auth = true } = {}) {
-  const headers = { "Content-Type": "application/json" };
-  if (auth) {
-    const token = getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
-
+async function request(path, { method = "GET", body } = {}) {
+  // A sessão é um cookie httpOnly setado pelo backend no login — o JS nunca
+  // vê o token (protege contra roubo de sessão via XSS). "include" faz o
+  // navegador enviar esse cookie mesmo com frontend/backend em domínios
+  // diferentes (obrigatório: sem isso, nenhum cookie cross-site é enviado).
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers,
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
@@ -62,7 +48,10 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 
 export const api = {
   login(email, password) {
-    return request("/auth/login", { method: "POST", body: { email, password }, auth: false });
+    return request("/auth/login", { method: "POST", body: { email, password } });
+  },
+  logout() {
+    return request("/auth/logout", { method: "POST" });
   },
   getMe() {
     return request("/auth/me");

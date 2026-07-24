@@ -12,6 +12,14 @@ from datetime import datetime, timedelta, timezone
 JANELA = timedelta(minutes=15)
 LIMITE = 5
 
+# Limite por IP é mais alto que o por e-mail de propósito: um IP pode ser
+# compartilhado por várias pessoas de verdade (NAT/proxy corporativo), então
+# um limite igual ao de e-mail bloquearia usuários legítimos por causa de
+# erros de digitação de outra pessoa na mesma rede. Ainda assim, um limite
+# existe pra dificultar varredura de credenciais (testar muitos e-mails
+# diferentes) a partir de um mesmo IP.
+LIMITE_IP = 20
+
 _falhas: dict[str, list[datetime]] = defaultdict(list)
 
 
@@ -22,8 +30,8 @@ def _tentativas_recentes(chave: str) -> list[datetime]:
     return recentes
 
 
-def bloqueado(chave: str) -> bool:
-    return len(_tentativas_recentes(chave)) >= LIMITE
+def bloqueado(chave: str, limite: int = LIMITE) -> bool:
+    return len(_tentativas_recentes(chave)) >= limite
 
 
 def registrar_falha(chave: str) -> None:
