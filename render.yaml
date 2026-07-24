@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: nexileads-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: BUBBLE_LOGIN_URL
+        sync: false
+      - key: BUBBLE_API_SECRET
+        sync: false
+
+  - type: web
+    name: nexileads-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
