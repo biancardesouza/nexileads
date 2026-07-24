@@ -64,6 +64,7 @@ export default function LoginPage({ onLogin }) {
             placeholder="seu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
         <div className="field">
@@ -74,6 +75,7 @@ export default function LoginPage({ onLogin }) {
               placeholder="••••••••"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
+              required
             />
             <button
               type="button"
