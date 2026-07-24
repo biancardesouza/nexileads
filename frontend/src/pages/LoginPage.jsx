@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api, setToken } from "../api/client";
+import { api } from "../api/client";
 import EyeIcon from "../components/common/EyeIcon";
 import Logo from "../components/common/Logo";
 
@@ -17,8 +17,7 @@ export default function LoginPage({ onLogin }) {
     setErro("");
     setCarregando(true);
     try {
-      const { access_token } = await api.login(email, senha);
-      setToken(access_token);
+      await api.login(email, senha);
       await onLogin();
     } catch (err) {
       setErro(err.message || "Não foi possível entrar. Tente novamente.");

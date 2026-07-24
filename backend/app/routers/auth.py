@@ -1,18 +1,34 @@
 import re
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .. import rate_limit
-from ..auth import create_access_token
+from ..auth import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    COOKIE_SAMESITE,
+    COOKIE_SECURE,
+    TOKEN_COOKIE_NAME,
+    create_access_token,
+)
 from ..bubble_client import BubbleIndisponivel, autenticar_no_bubble
 from ..dependencies import get_current_user, get_db
 from ..models import User
-from ..schemas import LoginRequest, Token, UserOut
+from ..schemas import LoginOut, LoginRequest, UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def obter_ip_cliente(request: Request) -> str | None:
+    """Atrás do load balancer do Render, request.client.host é o IP do proxy,
+    não o do usuário — usamos o X-Forwarded-For que a plataforma preenche com
+    o IP original, caindo pro IP da conexão direta em dev local (sem proxy)."""
+    encaminhado = request.headers.get("x-forwarded-for")
+    if encaminhado:
+        return encaminhado.split(",")[0].strip()
+    return request.client.host if request.client else None
 
 
 def normalizar_telefone(telefone: str) -> str | None:
@@ -74,10 +90,15 @@ def _sincronizar_usuario_bubble(db: Session, dados_bubble: dict) -> User:
     return user
 
 
-@router.post("/login", response_model=Token)
-def login(dados: LoginRequest, db: Session = Depends(get_db)):
+@router.post("/login", response_model=LoginOut)
+def login(dados: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db)):
     chave_bloqueio = dados.email.strip().lower()
-    if rate_limit.bloqueado(chave_bloqueio):
+    ip_cliente = obter_ip_cliente(request)
+    chave_ip = f"ip:{ip_cliente}" if ip_cliente else None
+
+    bloqueado_por_email = rate_limit.bloqueado(chave_bloqueio)
+    bloqueado_por_ip = chave_ip is not None and rate_limit.bloqueado(chave_ip, limite=rate_limit.LIMITE_IP)
+    if bloqueado_por_email or bloqueado_por_ip:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Muitas tentativas de login. Tente novamente em alguns minutos.",
@@ -93,12 +114,44 @@ def login(dados: LoginRequest, db: Session = Depends(get_db)):
 
     if dados_bubble is None:
         rate_limit.registrar_falha(chave_bloqueio)
+        if chave_ip:
+            rate_limit.registrar_falha(chave_ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="E-mail ou senha inválidos",
         )
 
+    # Só limpa o bloqueio da conta que acabou de autenticar com sucesso — o
+    # contador por IP continua contando as falhas de outras contas testadas
+    # a partir dele, senão um ataque de credential-stuffing conseguiria
+    # "resetar" a própria proteção por IP só acertando uma credencial válida
+    # no meio de várias tentativas.
     rate_limit.limpar(chave_bloqueio)
     user = _sincronizar_usuario_bubble(db, dados_bubble)
     token = create_access_token({"sub": user.username})
-    return Token(access_token=token, nome=user.nome)
+    # httpOnly: o token nunca fica acessível pra JS no navegador (nem em
+    # localStorage, nem lido do corpo desta resposta) — protege contra roubo
+    # de sessão via XSS. O front não precisa mais guardar nada: o cookie é
+    # enviado automaticamente pelo navegador em cada requisição seguinte.
+    response.set_cookie(
+        key=TOKEN_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/",
+    )
+    return LoginOut(nome=user.nome)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response):
+    # Sendo httpOnly, o front não consegue apagar esse cookie por conta
+    # própria — precisa desse endpoint pra fazer o navegador descartá-lo.
+    response.delete_cookie(
+        key=TOKEN_COOKIE_NAME,
+        path="/",
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+    )

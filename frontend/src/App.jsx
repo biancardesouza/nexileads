@@ -3,7 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import LeadsPage from "./pages/LeadsPage";
 import ProfilePage from "./pages/ProfilePage";
 import Topbar from "./components/layout/Topbar";
-import { api, ApiError, clearToken, getToken } from "./api/client";
+import { api } from "./api/client";
 
 export default function App() {
   const [perfil, setPerfil] = useState(null);
@@ -14,19 +14,12 @@ export default function App() {
     return api.getMe().then(setPerfil);
   }
 
-  // Se já existe um token salvo (login anterior), tenta restaurar a sessão em
-  // vez de jogar a pessoa de volta pra tela de login a cada F5.
+  // A sessão é um cookie httpOnly — o JS não consegue ler se ele existe, então
+  // sempre tentamos restaurar o perfil ao carregar a página; sem sessão válida
+  // o backend só responde 401 e a gente cai na tela de login normalmente.
   useEffect(() => {
-    if (!getToken()) {
-      setRestaurandoSessao(false);
-      return;
-    }
     carregarPerfil()
-      .catch((err) => {
-        // Só desloga de verdade se o token for realmente inválido (401).
-        // Um erro de rede/servidor não deve derrubar uma sessão válida.
-        if (err instanceof ApiError && err.status === 401) clearToken();
-      })
+      .catch(() => {})
       .finally(() => setRestaurandoSessao(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -37,9 +30,15 @@ export default function App() {
   }
 
   function handleLogout() {
-    clearToken();
-    setPerfil(null);
-    setTela("leads");
+    // Sendo httpOnly, o front não pode apagar o cookie por conta própria —
+    // precisa desse endpoint pra fazer o backend invalidá-lo de verdade. Se a
+    // chamada falhar (rede fora, etc), desloga a UI mesmo assim.
+    api.logout()
+      .catch(() => {})
+      .finally(() => {
+        setPerfil(null);
+        setTela("leads");
+      });
   }
 
   if (restaurandoSessao) {
