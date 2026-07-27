@@ -3,11 +3,11 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
 from .routers import auth, leads, novos_leads
 
-Base.metadata.create_all(bind=engine)
-
+# O schema do banco é gerenciado pelo Alembic (ver backend/alembic/), aplicado
+# via `alembic upgrade head` antes de subir o servidor (render.yaml) — não
+# criamos tabelas aqui mais.
 app = FastAPI(title="NexiLeads API")
 
 allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
