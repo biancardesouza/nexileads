@@ -1,14 +1,24 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import scheduler
 from .routers import auth, leads, novos_leads
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.iniciar()
+    yield
+    scheduler.parar()
+
 
 # O schema do banco é gerenciado pelo Alembic (ver backend/alembic/), aplicado
 # via `alembic upgrade head` antes de subir o servidor (render.yaml) — não
 # criamos tabelas aqui mais.
-app = FastAPI(title="NexiLeads API")
+app = FastAPI(title="NexiLeads API", lifespan=lifespan)
 
 allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
