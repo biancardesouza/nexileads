@@ -1,0 +1,5 @@
+# Falsos positivos conhecidos: strings de teste fixas usadas como
+# JWT_SECRET_KEY em ambiente de teste/e2e (nao sao segredo real, nunca
+# tocam producao) - ver backend/tests/conftest.py e backend/tests_e2e/server.py
+76055e9214e47e73039c3ea1d3d31b9fd90b9115:backend/tests/conftest.py:generic-api-key:5
+363d76f681b7b5e5140dd970fdc4a871611b28e6:backend/tests_e2e/server.py:generic-api-key:15

@@ -2,6 +2,13 @@
 testpaths = ["tests"]
 pythonpath = ["."]
 
+[tool.ruff.lint]
+# so pyflakes + pycodestyle "erros" (equivalente ao flake8 classico); regras de
+# estilo (bugbear, datetimez, isort, simplify, etc.) ficam de fora por ora pra
+# nao misturar "adicionar lint" com "reescrever estilo do codigo existente".
+select = ["E", "F"]
+ignore = ["E501"]
+
 [tool.coverage.run]
 source = ["app", "backup_banco", "restaurar_backup", "limpar_dados_antigos"]
 
