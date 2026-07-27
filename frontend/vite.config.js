@@ -7,6 +7,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
+    // e2e/**: specs do Playwright (frontend/playwright.config.js) — usam o
+    // mesmo padrão de nome *.spec.js do Vitest, mas rodam num runner
+    // diferente e não podem ser importadas aqui (o `test`/`describe` do
+    // Playwright não é compatível com o do Vitest).
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
