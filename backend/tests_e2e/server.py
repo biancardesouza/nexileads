@@ -32,6 +32,17 @@ from tests_e2e.bubble_mock import registrar_mocks  # noqa: E402
 respx.mock.start()
 registrar_mocks()
 
+# Banco descartável de E2E, à parte do histórico de migrações do Alembic (que
+# agora é quem cria o schema em dev/produção — ver app/main.py) — igual ao
+# padrão já usado em backend/tests/conftest.py para os testes de integração.
+# `import app.models` primeiro é essencial: sem isso Base.metadata não tem
+# nenhuma tabela registrada ainda (as classes só se registram quando o módulo
+# é importado) e o create_all abaixo não criaria nada.
+import app.models  # noqa: F401,E402
+from app.database import Base, engine  # noqa: E402
+
+Base.metadata.create_all(bind=engine)
+
 from app.main import app  # noqa: E402  (só depois das env vars + mock ativo)
 
 if __name__ == "__main__":
